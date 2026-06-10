@@ -25,20 +25,66 @@ server.listen(port, () => {
 });
 
 
+/** @type {Chat[]} global_chats */
+
 // Global variables
 let global_chats = [];
+let all_users_id = [];
 let users = {};
+
+/**
+ * @returns {string} generate_username 
+ *
+ * @callback GetChats
+ * @param {string} user_id
+ * @returns {Chat[]}
+ * */
 
 // Functions
 const clear_chats = () => {
     if (global_chats.length > conf.max_chat_count) {
         global_chats = [];
-        global_chats.push('Cleared the chat!');
+        
+        let chat = new Chat(
+            'server_67', 
+            `Cleared the messages.`,
+            `admin_mangos`
+        );
+
+        global_chats.push(chat);
     }
 };
 const generate_username = () => {
     const ran_index = Math.floor(Math.random() * (8 - 0 + 1));
     return conf.random_usernames[ran_index];
+};
+/** @type {GetChats} */
+const get_chats = (user_id) => {
+    let filtered_chats = [];
+
+    global_chats.map((chat) => {
+        let new_chat;
+
+        if (chat.user_id == user_id)
+            new_chat = new Chat(
+                chat.user_name, 
+                chat.user_chat, 
+                'you');
+        else if (chat.user_id == "admin_mangos")
+            new_chat = new Chat(
+                chat.user_name, 
+                chat.user_chat, 
+                'admin');
+        else
+            new_chat = new Chat(
+                chat.user_name, 
+                chat.user_chat, 
+                'other');
+
+        filtered_chats.push(new_chat);
+    });
+
+    return filtered_chats;
 };
 
 
@@ -56,8 +102,10 @@ io.on('connection', (sock) => {
     );
 
     global_chats.push(chat);
+    all_users_id.push(sock.id);
+    io.emit('message_update', get_chats(sock.id));
 
-    io.emit('message_update', global_chats);
+    sock.emit('init_connection', { id: sock.id });
 
     // Receive messages from clients
     sock.on('msg', (data) => {
@@ -70,10 +118,14 @@ io.on('connection', (sock) => {
             sock.id
         );
 
+
         if (p1 == "") return;
 
         global_chats.push(chat);
-        io.emit('message_update', global_chats);
+
+        all_users_id.map((id) => {
+            io.to(id).emit('message_update', get_chats(id));
+        });
     });
 
     // Announce disconnected clients
@@ -89,6 +141,6 @@ io.on('connection', (sock) => {
         delete users[sock.id];
         global_chats.push(chat);
 
-        io.emit('message_update', global_chats);
+        io.emit('message_update', get_chats(sock.id));
     });
 });

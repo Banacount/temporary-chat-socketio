@@ -1,6 +1,18 @@
 
+:root {
+    --bg-1: #0087b1;
+    --bg-lighter-1: #009fcf;
+    --color-text-1: #8d8d8d;
+}
+
 /* Root elements */
 body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+p, h1, h2, h3, div {
     margin: 0;
     padding: 0;
 }
@@ -10,59 +22,183 @@ body {
     z-index: 1;
     width: 100%;
     height: 100%;
+    top: 0;
+    right: 0;
     position: fixed;
     display: flex;
+    align-items: center;
     flex-direction: column-reverse;
     pointer-events: none;
+
 }
 #msgBox {
     z-index: 1;
-    width: 100%;
+    width: 80%;
     height: 2rem;
-    margin-bottom: 1rem;
     font-size: 1rem;
+    margin-bottom: 0.6rem;
+    padding: 0.2rem;
+    padding-left: 0.6rem;
+    padding-right: 3rem;
     pointer-events: all;
+    border: 2px var(--bg-1) solid;
+    border-radius: 17px;
     outline: none;
-    border: 0px solid;
-    border-top-width: 2px;
 }
 #sendBtn {
     z-index: 1;
+    width: 2.1rem;
+    height: 2.1rem;
     position: absolute;
-    width: 6rem;
     font-size: 0.8rem;
     padding: 0.5rem;
     border: 0px solid;
-    margin-bottom: 1.15rem;
-    margin-right: 0.2rem;
+    border-radius: 50%;
+    margin-left: 81%;
+    margin-bottom: 0.9rem;
     font-weight: bolder;
-    align-self: last baseline;
+    align-self: center;
     color: #ffffff;
-    background-color: #0087b1;
+    background-color: transparent;
+    background-image: url("assets/send_btn.svg");
+    background-position: center;
+    background-size: cover;
     pointer-events: all;
+    cursor: pointer;
+}
+#sendBtn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 #msgContain {
     z-index: 0;
+    margin-top: 1rem;
     width: 100%;
     height: auto;
 }
-#msgContain p {
+.message-contain {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* Message types */
+.admin .msg {
+    z-index: 0;
+    width: 100%;
+    border: 0px solid;
+    border-radius: 10px;
+    border-bottom-left-radius: 0px;
+    font-size: 1rem;
+    text-align: center;
+    color: var(--color-text-1);
+    background-color: transparent;
+}
+.admin .name {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--bg-1);
+}
+
+.other .msg {
     z-index: 0;
     width: fit-content;
     border: 0px solid;
     border-radius: 10px;
     border-bottom-left-radius: 0px;
     padding: 0.5rem;
-    margin: 1rem;
+    margin-left: 0.4rem;
+    align-self: first baseline;
+    font-size: 1.3rem;
+    color: white;
+    background-color: var(--color-text-1);
+}
+.other .name {
+    width: 100%;
+    padding-left: 1.5rem;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    text-align: left;
+    color: var(--color-text-1);
+}
+
+.you .msg {
+    z-index: 0;
+    width: fit-content;
+    border: 0px solid;
+    border-radius: 10px;
+    border-bottom-right-radius: 0px;
+    padding: 0.5rem;
+    margin-right: 0.4rem;
     align-self: last baseline;
     font-size: 1.3rem;
     color: white;
-    background-color: #009fcf;
+    background-color: var(--bg-lighter-1);
 }
+.you .name {
+    width: 100%;
+    padding-right: 1.5rem;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    text-align: right;
+    color: var(--color-text-1);
+}
+
 .msg-footer {
     width: 100%;
     text-align: center;
     margin-top: 2rem;
-    color: #8d8d8d;
+    font-size: 1.5rem;
+    color: var(--color-text-1);
+    animation: intro-footer 5s linear;
+    opacity: 0;
+}
+
+/* Animations */
+@keyframes slide-1 {
+    from {
+        transform: translateX(100px);
+        opacity: 0;
+    } 
+
+    to {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@keyframes slide-2 {
+    from {
+        transform: translateX(-100px);
+        opacity: 0;
+    } 
+
+    to {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+}
+@keyframes top-slide {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    } 
+
+    to {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+@keyframes intro-footer {
+    from {
+        opacity: 1;
+    } 
+
+    to {
+        opacity: 0;
+    }
 }
