@@ -38,6 +38,10 @@ let users = {};
  * @callback GetChats
  * @param {string} user_id
  * @returns {Chat[]}
+ *
+ * @callback ServerAnnounce
+ * @param {string} announce_msg
+ * @returns {null}
  * */
 
 // Functions
@@ -59,7 +63,7 @@ const generate_username = () => {
     return conf.random_usernames[ran_index];
 };
 /** @type {GetChats} */
-const get_chats = (user_id) => {
+const get_chats = (user_id = "") => {
     let filtered_chats = [];
 
     global_chats.map((chat) => {
@@ -86,6 +90,17 @@ const get_chats = (user_id) => {
 
     return filtered_chats;
 };
+/** @type {ServerAnnounce} */
+const serverAnnounce = (announce_msg) => {
+    let chat = new Chat(
+        'server_67', 
+        announce_msg,
+        `admin_mangos`
+    );
+
+    global_chats.push(chat);
+    io.emit('message_update', get_chats());
+};
 
 
 // Socket handle for each client
@@ -95,15 +110,8 @@ io.on('connection', (sock) => {
 
     console.log(`New device: ${sock.id}`);
 
-    let chat = new Chat(
-        'server_67', 
-        `New user has arrived '${users[sock.id]}'.`,
-        `admin_mangos`
-    );
-
-    global_chats.push(chat);
     all_users_id.push(sock.id);
-    io.emit('message_update', get_chats(sock.id));
+    serverAnnounce(`New user has arrived '${users[sock.id]}'.`);
 
     sock.emit('init_connection', { id: sock.id });
 
@@ -111,15 +119,20 @@ io.on('connection', (sock) => {
     sock.on('msg', (data) => {
         clear_chats();
 
+
+        // Rules
+        if ([...data].length >= 500) {
+            serverAnnounce(`${users[sock.id]} too long of a message man...`);
+            return;
+        }
         let p1 = data.trim();
+        if (p1 == "") return;
+
         let chat = new Chat(
             users[sock.id], 
             data, 
             sock.id
         );
-
-
-        if (p1 == "") return;
 
         global_chats.push(chat);
 
@@ -131,16 +144,9 @@ io.on('connection', (sock) => {
     // Announce disconnected clients
     sock.on('disconnect', () => {
         clear_chats();
+
         let username = String(users[sock.id]);
-        let chat = new Chat(
-            'server_67',
-            `${username} left, sadly :(`,
-            'admin_mangos'
-        );
-
+        serverAnnounce(`${username} left, sadly :(`);
         delete users[sock.id];
-        global_chats.push(chat);
-
-        io.emit('message_update', get_chats(sock.id));
     });
 });

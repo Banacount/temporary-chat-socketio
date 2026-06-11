@@ -5,16 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>socket testing</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/screen-response.css">
 </head>
 <body>
+    <div class="main-content">
+
     <div class="input-contain">
+        <div class="chat-box">
+
         <input id="msgBox" placeholder="Enter message." type="text">
         <button id="sendBtn"></button>
+
+        </div>
     </div>
 
     <div id="msgContain">
     </div>
     <div class="msg-footer" id="footer">by johval lol</div>
+
+    </div>
 </body>
 <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
 <script src="/index.js"></script>

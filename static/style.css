@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
 
 :root {
     --bg-1: #0087b1;
@@ -10,6 +11,7 @@ body {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
+    font-family: 'Rubik';
 }
 
 p, h1, h2, h3, div {
@@ -18,6 +20,9 @@ p, h1, h2, h3, div {
 }
 
 /* General elements */
+.main-content {
+    width: 100%;
+}
 .input-contain {
     z-index: 1;
     width: 100%;
@@ -30,6 +35,15 @@ p, h1, h2, h3, div {
     flex-direction: column-reverse;
     pointer-events: none;
 
+}
+.chat-box {
+    z-index: 1;
+    width: 100%;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    flex-direction: column-reverse;
+    pointer-events: none;
 }
 #msgBox {
     z-index: 1;
@@ -82,6 +96,8 @@ p, h1, h2, h3, div {
     flex-direction: column;
     align-items: center;
     margin-top: 1rem;
+    padding: 0.6rem;
+    box-sizing: border-box;
 }
 
 /* Message types */
@@ -119,9 +135,9 @@ p, h1, h2, h3, div {
 }
 .other .name {
     width: 100%;
-    padding-left: 1.5rem;
+    padding-left: 1rem;
     box-sizing: border-box;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     text-align: left;
     color: var(--color-text-1);
 }
@@ -141,9 +157,9 @@ p, h1, h2, h3, div {
 }
 .you .name {
     width: 100%;
-    padding-right: 1.5rem;
+    padding-right: 1rem;
     box-sizing: border-box;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     text-align: right;
     color: var(--color-text-1);
 }
