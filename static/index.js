@@ -2,14 +2,13 @@ const socket = io('/');
 
 const msgBox = document.getElementById('msgBox');
 const sendBtn = document.getElementById('sendBtn');
-
 let current_user_id = "";
+
 
 // Send button functionality
 sendBtn.addEventListener('click', () => 
 {
-    msgBox.value = msgBox.value.trim();
-    if (msgBox.value != "") {
+    msgBox.value = msgBox.value.trim(); if (msgBox.value != "") {
         // Send message to the server
         socket.emit('msg', msgBox.value);
         msgBox.value = "";
@@ -37,6 +36,7 @@ const renderMessages = (list) =>
 {
     msgContain.innerHTML = "";
 
+    let past_chat_id = "";
     list.map((msg, i) => {
         const msg_contain = document.createElement('div');
         const name = document.createElement('p');
@@ -65,11 +65,20 @@ const renderMessages = (list) =>
                 msg_contain.style.animation = 'top-slide 0.5s ease-in';
             else
                 msg_contain.style.animation = 'slide-2 0.5s ease-in';
-
-            console.log(`Last chat is ${msg.user_chat}`);
         }
+
+        if (msg.user_id == past_chat_id) {
+            msg_contain.style.top = '0';
+            msg_contain.style.marginTop = '-15px';
+            name.remove();
+        }
+
+        past_chat_id = msg.user_id;
     });
 };
+
+// For debug purposes
+console.log("-- For debugging purposes only (dont be sus) --");
 
 // Establish connection
 socket.on('init_connection', (data) => {
@@ -82,3 +91,4 @@ socket.on('message_update', (data) =>
     renderMessages(data);
 }
 );
+

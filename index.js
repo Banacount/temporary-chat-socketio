@@ -119,7 +119,6 @@ io.on('connection', (sock) => {
     sock.on('msg', (data) => {
         clear_chats();
 
-
         // Rules
         if ([...data].length >= 500) {
             serverAnnounce(`${users[sock.id]} too long of a message man...`);
