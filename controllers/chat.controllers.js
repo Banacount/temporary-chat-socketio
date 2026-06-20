@@ -41,7 +41,7 @@ export const createTemporaryLobby = (req, res) => {
 
         res.status(200).json({
             message: `Lobby '${lobby_name}' has been created`,
-            link: `http://localhost:2025/temp_chats?lobby=${lobby_id}`,
+            link: `http://localhost:2025/chats/temp_chats?lobby=${lobby_id}`,
         });
     } else {
         res.status(500).json({ message: "Cannot create a lobby." });

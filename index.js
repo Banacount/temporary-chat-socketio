@@ -152,7 +152,7 @@ tempChat.on("connection", (sock) => {
     // Filter each socket request to specific lobbies.
     /** @type {ChatService} */
     const chatService = returnLobbyBaseOnId(sock);
-
+    const query = sock.handshake.query;
     if (!chatService) return;
 
     chatService.clearChats();
@@ -163,7 +163,7 @@ tempChat.on("connection", (sock) => {
 
     chatService.addUser(sock.id, getUsername);
     chatService.lobbyAnnounce(
-        `New user has arrived '${chatService._users[sock.id]}'.`,
+        `New user has arrived '${chatService.getUser(sock.id)}'.`,
     );
 
     sock.emit("init_connection", { id: sock.id });
