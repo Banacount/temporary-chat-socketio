@@ -5,11 +5,11 @@ import { Server } from "socket.io";
 
 export class ChatService {
     /**
-     * @param {Server} io 
-     * @param {String} lobby_name  
-     * @param {String} lobby_id  
-     * @param {Boolean} isTemp  
-     * @param {Number} sec_lifespan  
+     * @param {Server} io
+     * @param {String} lobby_name
+     * @param {String} lobby_id
+     * @param {Boolean} isTemp
+     * @param {Number} sec_lifespan
      */
     constructor(io = paramRequired(), lobby_name, lobby_id) {
         /**
@@ -19,22 +19,22 @@ export class ChatService {
         this.server = io;
         this._global_chats = [];
         this._all_users_id = []; // TODO: this as a Map class instead of an array
-        this._users = {};
+        this._users = {}; // content: socket_id -> username
         this.lobby_id = lobby_id;
         this.lobby_name = lobby_name;
         this.shouldBeDead = false;
 
-        this.lobby_announce(`Welcome to '${lobby_name}'.`);
+        this.lobbyAnnounce(`Welcome to '${lobby_name}'.`);
     }
 
     /**
      * @desc Used for temporary chat services or 'lobbies'.
      *
-     * @param {Number} sec_lifespan  
+     * @param {Number} sec_lifespan
      */
-    isTemporary (deadCallback, sec_lifespan = 4*min) {
+    killAfterExpiration(deadCallback, sec_lifespan = 4 * min) {
         setTimeout(() => {
-            this.lobby_announce("This lobby is dead. Refresh your page..");
+            this.lobbyAnnounce("This lobby is dead. Refresh your page..");
             this.shouldBeDead = true;
             deadCallback(this.lobby_id);
         }, sec_lifespan);
@@ -47,7 +47,7 @@ export class ChatService {
      * @param {string} sock_id - The unique socket or connection identifier for the user.
      * @param {string} username - Username display for the specified identifier.
      */
-    add_user (sock_id, username) {
+    addUser(sock_id, username) {
         this._users[sock_id] = username;
         this._all_users_id.push(sock_id);
         console.log(`New device: ${sock_id}`);
@@ -58,7 +58,7 @@ export class ChatService {
      * @param {number} user_id - the socket id linked to the current user.
      * @returns {Chat[]} returns a new Chat array containing the formatted versions of each chatl..
      */
-    get_chats(user_id) {
+    getChats(user_id) {
         let formattedChats = [];
 
         this._global_chats.map((chat) => {
@@ -76,18 +76,19 @@ export class ChatService {
         return formattedChats;
     }
 
+    addToGlobalChats(chat) {
+        this._global_chats.push(chat);
+    }
+
     /**
      * @desc Update the messages for all clients.
      * @returns {null}
      */
-    update_messages() {
+    updateMessages() {
         if (this.shouldBeDead) return;
 
         this._all_users_id.map((id) => {
-            this.server.to(id).emit(
-                "message_update", 
-                this.get_chats(id)
-            );
+            this.server.to(id).emit("message_update", this.getChats(id));
         });
     }
 
@@ -98,15 +99,19 @@ export class ChatService {
      * @param {string} announce_msg - The text content of the announcement to be sent.
      * @returns {null}
      */
-    lobby_announce(announce_msg) {
+    lobbyAnnounce(announce_msg) {
         let chat = new Chat("server_67", announce_msg, `admin_mangos`);
 
         this._global_chats.push(chat);
         //this.server.emit("message_update", this.get_chats());
 
-        this.update_messages();
+        this.updateMessages();
         //console.log(this._all_users_id);
         //console.log(this._users);
+    }
+
+    getUser(id) {
+        return this._users[id];
     }
 
     /**
@@ -115,7 +120,7 @@ export class ChatService {
      * notifying users that the chat has been cleared.
      * @returns {null}
      */
-    clear_chats() {
+    clearChats() {
         if (this._global_chats.length > conf.max_chat_count) {
             this._global_chats = [];
 
@@ -131,13 +136,13 @@ export class ChatService {
 
     /**
      * @desc Method to handle socket disconnects with provided socket id.
-     * @param {string} user_id 
+     * @param {string} user_id
      */
     disconnect(user_id) {
         let username = String(this._users[user_id]);
-        let filtered_id = this._all_users_id.filter(id => (id != user_id));
+        let filtered_id = this._all_users_id.filter((id) => id != user_id);
 
-        this.lobby_announce(`${username} left, sadly :(`);
+        this.lobbyAnnounce(`${username} left, sadly :(`);
         this._all_users_id = filtered_id;
         delete this._users[user_id];
     }
