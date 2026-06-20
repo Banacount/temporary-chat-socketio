@@ -47,3 +47,17 @@ const cannotFindLobby = (socket) => {
 
     socket.emit("message_update", [chat]);
 };
+
+export const validatedChat = (data, chatService, sockId) => {
+    // Rules
+    if ([...data].length >= 500) {
+        chatService.lobbyAnnounce(
+            `${chatService.getUser(sock.id)} too long of a message man...`,
+        );
+        return;
+    }
+    let p1 = data.trim();
+    if (p1 == "") return;
+
+    return new Chat(chatService.getUser(sockId), data, sockId);
+};

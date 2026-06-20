@@ -5,7 +5,7 @@ import { Chat } from "./models/chat.model.js";
 import { ChatService } from "./services/chat.service.js";
 import chatRoutes from "./routes/chat.routes.js";
 import { generateUsername } from "./utils/helpers.js";
-import { returnLobbyBaseOnId } from "./utils/chat.helpers.js";
+import { returnLobbyBaseOnId, validatedChat } from "./utils/chat.helpers.js";
 
 const app = express();
 const server = createServer(app);
@@ -123,18 +123,9 @@ mainChat.on("connection", (sock) => {
     sock.on("msg", (data) => {
         // chatService.clearChats();
 
-        // Rules
-        if ([...data].length >= 500) {
-            chatService.lobbyAnnounce(
-                `${chatService.getUser(sock.id)} too long of a message man...`,
-            );
-            return;
-        }
-        let p1 = data.trim();
-        // if message is empty, then don't proceed
-        if (p1 == "") return;
+        const chat = validatedChat(data, chatService, sock.id);
 
-        let chat = new Chat(chatService.getUser(sock.id), data, sock.id);
+        if (!chat) return;
 
         chatService.addToGlobalChats(chat);
         chatService.updateMessages();
@@ -181,20 +172,10 @@ tempChat.on("connection", (sock) => {
     sock.on("msg", (data) => {
         chatService.clearChats();
 
-        // Rules
-        if ([...data].length >= 500) {
-            chatService.lobbyAnnounce(
-                `${chatService.getUser(sock.id)} too long of a message man...`,
-            );
-            return;
-        }
-        let p1 = data.trim();
-        if (p1 == "") return;
+        const chat = validatedChat(data, chatService, sock.id);
 
-        // ! REFACTOR THIS
-        let chat = new Chat(chatService.getUser(sock.id), data, sock.id);
+        if (!chat) return;
 
-        // TODO: seperate this in a method
         chatService.addToGlobalChats(chat);
         chatService.updateMessages();
     });
