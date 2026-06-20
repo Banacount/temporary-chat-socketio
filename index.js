@@ -1,18 +1,21 @@
-import { conf } from "./config.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import express from "express";
 import { Chat } from "./models/chat.model.js";
 import { ChatService } from "./services/chat.service.js";
-import { randomUUID } from "crypto";
+import chatRoutes from "./routes/chat.routes.js";
+import { generateUsername } from "./utils/helpers.js";
+import { returnLobbyBaseOnId } from "./utils/chat.helpers.js";
 
 const app = express();
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// Routes and Lobbies
-const mainChat = io.of('/chats');
-const tempChat = io.of('/temp_chats');
+/**
+ * io.of -> split a single physical WebSocket connection into multiple isolated communication channels over the same server port
+ */
+export const mainChat = io.of("/chats");
+export const tempChat = io.of("/temp_chats");
 
 /**
  * @typedef {Object} LobbyMap
@@ -20,69 +23,64 @@ const tempChat = io.of('/temp_chats');
  */
 
 /** @type {LobbyMap} */
-const permanentLobbies = { 
-    global: new ChatService(mainChat, "Global center", "global"), 
-    chat_1: new ChatService(mainChat, "Joe's nutsack", "global"),
-    chat_2: new ChatService(mainChat, "Joe's floorboards", "global") 
-};
 
 /** @type {LobbyMap} */
-let temporaryLobbies = {};
+// ! REFACTOR: since these two objects are doing identical operations, we will just make them into a single data structure.
+// const permanentLobbies = {
+//     global: new ChatService(mainChat, "Global center", "global"),
+//     chat_1: new ChatService(mainChat, "Joe's nutsack", "global"),
+//     chat_2: new ChatService(mainChat, "Joe's floorboards", "global"),
+// };
 
-// App setup 
+/*
+ * lobbies map
+ * sample contents (key: lobby_id)
+ * ->
+ *   -   lobby_name
+ *   -   isTemporary
+ *   -   io (chat service) ?
+ *   -   expirationTime ?
+ */
+export const lobbies = new Map();
+
+// SET GLOBAL LOBBIES
+lobbies.set("global", {
+    lobby_name: "Global Center",
+    isTemporary: false,
+    chatService: new ChatService(mainChat, "Global center", "global"),
+});
+lobbies.set("chat_1", {
+    lobby_name: "Joe's nutsack",
+    isTemporary: false,
+    chatService: new ChatService(mainChat, "Joe's nutsack", "global"),
+});
+lobbies.set("chat_2", {
+    lobby_name: "Joe's floorboards",
+    isTemporary: false,
+    chatService: new ChatService(mainChat, "Joe's floorboards", "global"),
+});
+// console.log(lobbies);
+// App setup
 app.set("view engine", "ejs");
 app.use(express.static("static"));
 
-// Paths
+// --------- Paths
 app.get("/", (req, res) => {
-    res.send("Home thing.");
+    res.send(`
+        <a class="link-button lobby-link" href="/chats">Go to Global</a>
+    `);
 });
 
-app.get("/new/:name", (req, res) => {
-    const lobby_name = req.params.name;
-        const lobby_id = randomUUID().replace(/-/g, '');
+/*
+Routes ->
+    /chats
+    /chats/new/:name
+    /chats/killed
+    /chats/temp_chats
+*/
+app.use("/chats", chatRoutes);
 
-    if (lobby_name && lobby_name.trim() != "") {
-        // Check if a lobby name already exists
-        let nameIsActive = false;
-        for (const key in temporaryLobbies) 
-        {
-            if (temporaryLobbies[key].lobby_name == lobby_name)
-                nameIsActive = true;
-        }
-
-        if (nameIsActive) {
-            res.status(500).json({ message: "Lobby name already exists." });
-            return;
-        }
-
-        const tempLobby = new ChatService(tempChat, lobby_name, lobby_id, true);
-
-        tempLobby.isTemporary((id) => {
-            delete temporaryLobbies[id];
-            console.log(`Killing temporary lobby '${id}'.`);
-        });
-
-        temporaryLobbies[lobby_id] = tempLobby;
-
-        res.status(200).json({ 
-            message: `Lobby '${lobby_name}' has been created`,
-            link: `http://localhost:2025/temp_chats?lobby=${lobby_id}`
-        });
-    } else {
-        res.status(500).json({ message: "Cannot create a lobby." });
-    }
-});
-app.get("/killed", (req, res) => {
-    res.send("The lobby is dead. Goodabye lmao!");
-});
-
-app.get("/chats", (req, res) => {
-    res.render("main_chats");
-});
-app.get("/temp_chats", (req, res) => {
-    res.render("temp_chats");
-});
+// --------- End Paths
 
 // Server things
 const port = 2025;
@@ -91,97 +89,89 @@ server.listen(port, () => {
     console.log(`http://localhost:${port}`);
 });
 
-const generate_username = () => {
-    const min = 0, max = conf.random_usernames.length-1;
-    const ran_index = Math.floor(Math.random() * (max - min + 1));
-    return conf.random_usernames[ran_index];
-};
-
-
-// The permanent chato lobbies.
+// The permanent chat lobbies.
 mainChat.on("connection", (sock) => {
     const query = sock.handshake.query;
-    let lobby_index = 'global';
+    let lobby_index = "global";
 
-    if (query.lobby != 'null' && permanentLobbies[query.lobby])
-        lobby_index = query.lobby;
-
+    /*
+     *   check if the parameter: ?lobby= is not null and the lobby query --
+     *   exists in the permanentLobbies
+     */
     // Filter each socket request to specific lobbies.
     /** @type {ChatService} */
-    const chatService = permanentLobbies[lobby_index];
-    chatService.clear_chats();
+    const chatService = returnLobbyBaseOnId(sock);
+
+    if (!chatService) {
+        console.log("none");
+        return;
+    }
+
     let getUsername;
 
-    if (query.username != 'null') 
-        getUsername = query.username;
-    else 
-        getUsername = generate_username(); // if a client joined, then 
+    if (query.username != "null") getUsername = query.username;
+    else getUsername = generateUsername(); // if a client joined, then
 
-    chatService.add_user(sock.id, getUsername);
-    chatService.lobby_announce(
-        `New user has arrived '${chatService._users[sock.id]}'.`,
+    chatService.addUser(sock.id, getUsername);
+    chatService.lobbyAnnounce(
+        `New user has arrived '${chatService.getUser(sock.id)}'.`,
     );
 
     sock.emit("init_connection", { id: sock.id });
 
     // Receive messages from clients
     sock.on("msg", (data) => {
-        chatService.clear_chats();
+        // chatService.clearChats();
 
         // Rules
         if ([...data].length >= 500) {
-            chatService.lobby_announce(
-                `${chatService._users[sock.id]} too long of a message man...`,
+            chatService.lobbyAnnounce(
+                `${chatService.getUser(sock.id)} too long of a message man...`,
             );
             return;
         }
         let p1 = data.trim();
+        // if message is empty, then don't proceed
         if (p1 == "") return;
 
-        let chat = new Chat(chatService._users[sock.id], data, sock.id);
+        let chat = new Chat(chatService.getUser(sock.id), data, sock.id);
 
-        chatService._global_chats.push(chat);
-        chatService.update_messages();
+        chatService.addToGlobalChats(chat);
+        chatService.updateMessages();
     });
 
     // Announce disconnected clients
     sock.on("disconnect", () => {
-        chatService.clear_chats();
+        chatService.clearChats();
         chatService.disconnect(sock.id);
     });
 });
 
-// The temporary chato lobbies.
+// The temporary chats lobbies.
 tempChat.on("connection", (sock) => {
-    const query = sock.handshake.query;
-    let lobby_index;
-
-    if (query.lobby != 'null' && temporaryLobbies[query.lobby]) {
-        lobby_index = query.lobby;
-    } else {
-        let chat = new Chat(
-            "server_67", 
-            "This lobby doesn't seem to exist", 
-            "admin"
-        );
-
-        sock.emit("message_update", [chat]);
-        return;
-    }
+    /*
+    * get queries from the frontend
+    * sample ->
+    *
+    * query:
+        username: urlParams.get("username"),
+        lobby: urlParams.get("lobby")
+    */
 
     // Filter each socket request to specific lobbies.
     /** @type {ChatService} */
-    const chatService = temporaryLobbies[lobby_index];
-    chatService.clear_chats();
+    const chatService = returnLobbyBaseOnId(sock);
+
+    if (!chatService) return;
+
+    chatService.clearChats();
     let getUsername;
 
-    if (query.username != 'null') 
-        getUsername = query.username;
-    else 
-        getUsername = generate_username(); // if a client joined, then 
+    if (query.username != "null") getUsername = query.username;
+    else getUsername = generateUsername(); // if a client joined, then
 
-    chatService.add_user(sock.id, getUsername);
-    chatService.lobby_announce(
+    chatService.addUser(sock.id, getUsername);
+    chatService.lobbyAnnounce(
         `New user has arrived '${chatService._users[sock.id]}'.`,
     );
 
@@ -189,27 +179,29 @@ tempChat.on("connection", (sock) => {
 
     // Receive messages from clients
     sock.on("msg", (data) => {
-        chatService.clear_chats();
+        chatService.clearChats();
 
         // Rules
         if ([...data].length >= 500) {
-            chatService.lobby_announce(
-                `${chatService._users[sock.id]} too long of a message man...`,
+            chatService.lobbyAnnounce(
+                `${chatService.getUser(sock.id)} too long of a message man...`,
             );
             return;
         }
         let p1 = data.trim();
         if (p1 == "") return;
 
-        let chat = new Chat(chatService._users[sock.id], data, sock.id);
+        // ! REFACTOR THIS
+        let chat = new Chat(chatService.getUser(sock.id), data, sock.id);
 
-        chatService._global_chats.push(chat);
-        chatService.update_messages();
+        // TODO: seperate this in a method
+        chatService.addToGlobalChats(chat);
+        chatService.updateMessages();
     });
 
     // Announce disconnected clients
     sock.on("disconnect", () => {
-        chatService.clear_chats();
+        chatService.clearChats();
         chatService.disconnect(sock.id);
     });
 });
