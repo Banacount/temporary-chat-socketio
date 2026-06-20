@@ -23,14 +23,14 @@ export const createTemporaryLobby = (req, res) => {
         // create the lobby chat object (temporary lobby, this will be deleted after a specific time)
         const tempLobby = new ChatService(tempChat, lobby_name, lobby_id, true);
 
-        // set the isTemporary callback to this function delete the chat object from temporaryLobbies object
+        // set the killAfterExpiration callback to this function delete the chat object from lobbies Map
         tempLobby.killAfterExpiration((id) => {
             lobbies.delete(id);
             console.log(`Killing temporary lobby '${id}'.`);
         });
 
-        // assign the lobby `Chat` object to its lobby id in temporaryLobbies object
-        // temporaryLobbies[lobby_id] = tempLobby;
+        // assign the lobby `Chat` object to its lobby id in lobbies Map
+        // lobbies[lobby_id] = tempLobby;
         lobbies.set(lobby_id, {
             isTemporary: true,
             lobby_name: lobby_name,
