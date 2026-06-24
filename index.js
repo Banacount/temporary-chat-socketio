@@ -60,9 +60,7 @@ app.use(express.static("static"));
 
 // --------- Paths
 app.get("/", (req, res) => {
-    res.send(`
-        <a class="link-button lobby-link" href="/chats">Go to Global Chats</a>
-    `);
+    res.render('home');
 });
 
 /*
@@ -100,8 +98,10 @@ mainChat.on("connection", (sock) => {
     let getUsername;
 
     // TODO: seperate this
-    if (query.username != "null") getUsername = query.username;
-    else getUsername = generateUsername(); // if a client joined, then
+    if (query.username != "null" && query.username.trim() != "") 
+        getUsername = query.username.trim();
+    else 
+        getUsername = generateUsername(); // if a client joined, then
 
     chatService.addUser(sock.id, getUsername);
     chatService.lobbyAnnounce(
@@ -145,8 +145,10 @@ tempChat.on("connection", (sock) => {
     let getUsername;
 
     // TODO: seperate this
-    if (query.username != "null") getUsername = query.username;
-    else getUsername = generateUsername(); // if a client joined, then
+    if (query.username != "null" && query.username.trim() != "") 
+        getUsername = query.username.trim();
+    else 
+        getUsername = generateUsername(); // if a client joined, then
 
     chatService.addUser(sock.id, getUsername);
     chatService.lobbyAnnounce(

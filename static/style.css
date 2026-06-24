@@ -9,9 +9,10 @@
     --bg-2: #2b2b2b;
     --bg-lighter-2: #5f5f5f;
     --color-text-2: #f1e2b8;
+    --header-color: #eeee;
 }
 
-.header {
+#mainHeader {
     background-color: #eeee;
     padding: 12px;
     box-shadow:
@@ -23,7 +24,7 @@
         rgba(14, 63, 126, 0.04) 0px 24px 24px -12px;
 }
 
-.link-button.create-temporary-btn {
+.link-button.home {
     background-color: var(--bg-lighter-2);
     /*color: var(--color-text-2);*/
     color: white;

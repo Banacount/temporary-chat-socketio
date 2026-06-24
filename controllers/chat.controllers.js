@@ -16,7 +16,7 @@ export const createTemporaryLobby = (req, res) => {
 
         // if lobby name already existed, send an error message
         if (nameIsActive) {
-            res.status(500).json({ message: "Lobby name already exists." });
+            res.status(200).json({ message: "Lobby name already exists." });
             return;
         }
 
@@ -37,7 +37,7 @@ export const createTemporaryLobby = (req, res) => {
             chatService: tempLobby,
         });
 
-        console.log(lobbies);
+        //console.log(lobbies);
 
         res.status(200).json({
             message: `Lobby '${lobby_name}' has been created`,

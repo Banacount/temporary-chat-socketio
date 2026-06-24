@@ -3,12 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>socket testing</title>
+    <title>Temporary Chat: local</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/screen-response.css">
 </head>
 <body>
     <div class="main-content">
+
+    <div id="mainHeader">
+        <div>
+            <h1 class="header-title" id="globalTell"></h1>
+        </div>
+
+        <div style="gap: 6px;">
+            <a class="link-button lobby-link" href="/chats">Go to Global</a>
+            <a class="link-button home" href="/">Home</a>
+        </div>
+    </div>
 
     <div class="input-contain">
         <div class="chat-box">
@@ -26,5 +37,6 @@
     </div>
 </body>
 <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
+<script src="/global_func.js"></script>
 <script src="/temp_chats_func.js"></script>
 </html>

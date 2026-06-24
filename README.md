@@ -25,13 +25,6 @@ http://localhost:2025/chats/temp_chats?lobby={lobby id}
 ```
 
 ---
-You can also add a custom username by adding a username query into
-both the temporary and global chat urls:
-```
-http://localhost:2025/chats/temp_chats?username={desired user name}
-or
-http://localhost:2025/chats?username={desired user name}
-```
 
 > The current code needs heavy refactoring. Maybe
 a better framework to work of off but for now it lowk

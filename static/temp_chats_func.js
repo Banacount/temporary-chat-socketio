@@ -1,13 +1,14 @@
 const urlParams = new URLSearchParams(window.location.search);
 const socket = io("/temp_chats", {
     query: {
-        username: urlParams.get("username"),
+        username: loadUsername(),
         lobby: urlParams.get("lobby")
     }
 });
 
 const msgBox = document.getElementById("msgBox");
 const sendBtn = document.getElementById("sendBtn");
+const globalTell = document.getElementById("globalTell");
 let current_user_id = "";
 
 // Send button functionality
@@ -85,9 +86,15 @@ console.log("-- For debugging purposes only (dont be sus) --");
 // Establish connection
 socket.on("init_connection", (data) => {
     current_user_id = data.id;
+    globalTell.textContent = `You're in a local lobby: ${data.lobby_name}.`;
 });
 
 socket.on("message_update", (data) => {
     console.log(data);
+
+    if (data[0].message == "This lobby doesn't seem to exist")
+        globalTell.textContent = "No detected local lobby.";
+
     renderMessages(data);
 });
+

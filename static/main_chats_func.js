@@ -1,7 +1,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 const socket = io("/chats", {
     query: {
-        username: urlParams.get("username"),
+        username: loadUsername(),
         lobby: urlParams.get("lobby")
     }
 });
@@ -94,3 +94,4 @@ socket.on("message_update", (data) => {
     console.log(data);
     renderMessages(data);
 });
+
