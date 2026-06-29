@@ -10,3 +10,11 @@
 	}
 }
 
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg-3: #181926;
+		--header-color: #24273a;
+		--bg-lighter-2: #6e738d;
+		--color-text-input: #cad3f5;
+	}
+}

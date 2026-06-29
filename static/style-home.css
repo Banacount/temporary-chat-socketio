@@ -9,7 +9,6 @@
 	justify-content: center;
 	top: 0;
 	bottom: 0;
-	background-color: white;
 }
 .user-info {
 	width: 20rem;
@@ -22,11 +21,29 @@
 	box-shadow: 0px 0px 20px 1px rgba(0, 0, 0, 0.3);
 }
 .user-info input {
-	border: 2px solid var(--color-text-1);
-    font-family: "Rubik";
-	font-size: 1rem;
-	padding: 8px;
-	outline: none;
+    width: 80%;
+    height: 2rem;
+    font-size: 0.9rem;
+    /*top right bottom left*/
+    pointer-events: all;
+    border: none;
+    /*border: 2px var(--bg-1) solid;*/
+    /*border-radius: 17px;*/
+    border-radius: 2px;
+    padding: 0.2rem 3rem 0.2rem 0.9rem;
+    outline: none;
+    background-color: rgba(0, 135, 177, 0.08);
+    transition: box-shadow 0.1s ease-in-out;
+    color: var(--color-text-input);
+}
+.user-info input:focus {
+    box-shadow: 0 0 0 1.4px #009fcf80;
+}
+.user-info input::placeholder {
+    padding-left: 0.9rem;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 .user-info button {
     border: 1px solid transparent;
