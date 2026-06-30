@@ -50,7 +50,7 @@ export class ChatService {
     addUser(sock_id, username) {
         this._users[sock_id] = username;
         this._all_users_id.push(sock_id);
-        console.log(`New device: ${sock_id}`);
+        //console.log(`New device: ${sock_id}`);
     }
 
     /**
