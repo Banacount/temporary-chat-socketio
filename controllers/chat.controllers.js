@@ -37,7 +37,7 @@ export const createTemporaryLobby = (req, res) => {
             chatService: tempLobby,
         });
 
-        //console.log(lobbies);
+        console.log(lobbies);
 
         res.status(200).json({
             message: `Lobby '${lobby_name}' has been created`,

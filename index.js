@@ -1,7 +1,6 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import express from "express";
-import { Chat } from "./models/chat.model.js";
 import { ChatService } from "./services/chat.service.js";
 import chatRoutes from "./routes/chat.routes.js";
 import { generateUsername } from "./utils/helpers.js";
@@ -12,7 +11,9 @@ const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 /**
- * io.of -> split a single physical WebSocket connection into multiple isolated communication channels over the same server port
+ * io.of -> 
+ * split a single physical WebSocket connection into multiple 
+ * isolated communication channels over the same server port
  */
 export const mainChat = io.of("/chats");
 export const tempChat = io.of("/temp_chats");
@@ -35,6 +36,7 @@ export const tempChat = io.of("/temp_chats");
  *   -   io (chat service) ?
  *   -   expirationTime ?
  */
+
 export const lobbies = new Map();
 
 // SET GLOBAL LOBBIES
@@ -78,7 +80,7 @@ app.use("/chats", chatRoutes);
 const port = 2025;
 server.listen(port, () => {
     console.log("Server is running:");
-    //console.log(`http://localhost:${port}`);
+    console.log(`http://localhost:${port}`);
 });
 
 // The permanent chat lobbies.
@@ -91,7 +93,7 @@ mainChat.on("connection", (sock) => {
     const chatService = returnLobbyBaseOnId(sock);
 
     if (!chatService) {
-        //console.log("none");
+        console.log("none");
         return;
     }
 
@@ -144,11 +146,11 @@ tempChat.on("connection", (sock) => {
     chatService.clearChats();
     let getUsername;
 
-    // TODO: seperate this
+    // if a client joined, then generate a username
     if (query.username != "null" && query.username.trim() != "") 
         getUsername = query.username.trim();
     else 
-        getUsername = generateUsername(); // if a client joined, then
+        getUsername = generateUsername();
 
     chatService.addUser(sock.id, getUsername);
     chatService.lobbyAnnounce(
