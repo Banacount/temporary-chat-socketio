@@ -37,11 +37,13 @@ export const createTemporaryLobby = (req, res) => {
             chatService: tempLobby,
         });
 
-        console.log(lobbies);
+        //console.log(lobbies);
+
+        let rootURL = req.protocol + '://' + req.get('host');
 
         res.status(200).json({
             message: `Lobby '${lobby_name}' has been created`,
-            link: `http://localhost:2025/chats/temp_chats?lobby=${lobby_id}`,
+            link: `${rootURL}/chats/temp_chats?lobby=${lobby_id}`,
         });
     } else {
         res.status(500).json({ message: "Cannot create a lobby." });

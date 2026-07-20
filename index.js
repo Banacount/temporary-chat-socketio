@@ -79,8 +79,8 @@ app.use("/chats", chatRoutes);
 // Server things
 const port = 2025;
 server.listen(port, () => {
-    console.log("Server is running:");
-    console.log(`http://localhost:${port}`);
+    console.log("Server is running.");
+    //console.log(`http://localhost:${port}`);
 });
 
 // The permanent chat lobbies.
@@ -93,7 +93,7 @@ mainChat.on("connection", (sock) => {
     const chatService = returnLobbyBaseOnId(sock);
 
     if (!chatService) {
-        console.log("none");
+        //console.log("none");
         return;
     }
 

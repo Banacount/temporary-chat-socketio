@@ -29,3 +29,11 @@ http://localhost:2025/chats/temp_chats?lobby={lobby id}
 > The current code needs heavy refactoring. Maybe
 a better framework to work of off but for now it lowk
 kinda works.
+
+--- 
+
+### Changes (development):
+* Added an icon.
+* Fixed the temporary lobby link in production.
+* Some css tweaks.
+* (bug) the icon doesn't seem to work in temp_chats.
